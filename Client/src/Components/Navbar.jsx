@@ -5,10 +5,9 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../Context/AppContext.jsx'
 import { useContext } from 'react'
-
 const Navbar = () => {
 
-    const {user , setShowLogin} = useContext(AppContext)
+    const {user , setShowLogin, credits, logout} = useContext(AppContext)
     const navigate = useNavigate();
     return (
         <motion.div 
@@ -99,7 +98,7 @@ const Navbar = () => {
                                 repeatDelay: 1
                             }}
                         />
-                        <p className='text-sm sm:text-sm text-gray-600 relative z-10'>Credit left : 80</p>
+                        <p className='text-sm sm:text-sm text-gray-600 relative z-10'>Credit left : {credits}</p>
                     </motion.button>
 
                     {/* Animated greeting */}
@@ -113,7 +112,7 @@ const Navbar = () => {
                             scale: 1.05
                         }}
                     >
-                        Hi User
+                        Hi {user?.name || 'User'}
                     </motion.p>
 
                     {/* Animated profile dropdown */}
@@ -162,6 +161,7 @@ const Navbar = () => {
                                         x: 5
                                     }}
                                     transition={{ type: "spring", bounce: 0.6 }}
+                                    onClick={logout}
                                 >
                                     Logout
                                 </motion.li>

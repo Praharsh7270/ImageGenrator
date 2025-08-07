@@ -2,17 +2,30 @@ import React from 'react'
 import { assets } from '../assets/assets'
 import { useState } from 'react';
 import { motion } from 'framer-motion'
+import { useContext } from 'react'
+import { AppContext } from '../Context/AppContext.jsx'
+
 
 const Result = () => {
 
   const [image, setImage] = useState(assets.sample_img_1); // Default image
-  const [loading, setLoading] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
+
+  const {genrateImage} = useContext(AppContext);
+
   const [input, setInput] = useState("");
 
   const handleSubmit = async (e) => {
-   
+    e.preventDefault()
+    setIsLoading(true);
+
+    if (input){
+      const generatedImage = await genrateImage(input);
+      if (generatedImage) {
+        setImage(generatedImage);
+      }
+    }
+    setIsLoading(false);
   }
 
   return (
@@ -132,7 +145,7 @@ const Result = () => {
       </motion.div>
 
       {/* Input section with animation */}
-      {!loading &&
+      {!isLoading && image === assets.sample_img_1 &&
         <motion.div 
           className='flex w-full max-w-xl bg-neutral-500 rounded-full relative overflow-hidden z-10'
           initial={{ opacity: 0, y: 30, scale: 0.9 }}
@@ -191,19 +204,19 @@ const Result = () => {
       }
 
       {/* Action buttons with staggered animation */}
-      {loading &&
+      {!isLoading && image !== assets.sample_img_1 &&
         <motion.div 
           className='flex gap-4 flex-wrap justify-center text-sm mt-10 z-10'
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.6 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
         >
           <motion.button 
             className='bg-transparent border-2 border-zinc-300 px-8 py-3 rounded-full cursor-pointer text-black relative overflow-hidden'
-            onClick={() => setLoading(false)}
+            onClick={() => {setImage(assets.sample_img_1); setInput("");}}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
             whileHover={{ 
               scale: 1.05,
               borderColor: "#a1a1aa",
@@ -227,7 +240,7 @@ const Result = () => {
             className='bg-zinc-900 px-8 py-3 rounded-full cursor-pointer text-white relative overflow-hidden inline-block'
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.4, duration: 0.5 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
             whileHover={{ 
               scale: 1.05,
               backgroundColor: "#374151",

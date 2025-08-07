@@ -4,14 +4,73 @@ import { useState } from 'react';
 import { useContext } from 'react';
 import { AppContext } from '../Context/AppContext.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
+import 'react-toastify/dist/ReactToastify.css';
 const Login = () => {
 
     const [state, setState] = useState("Login");
-    const {setShowLogin} = useContext(AppContext);
+    const {setShowLogin, backendUrl, setToken, setUser, getUserCredits} = useContext(AppContext);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     const handleChange = (e) => {
         setState({ ...state, [e.target.name]: e.target.value });
+
+    }
+
+    const onsubmitHandler = async (e) => {
+        e.preventDefault();
+        try{
+          if(state === "Login") {
+              const {data} = await axios.post(backendUrl +"/api/user/login", {
+                email,
+                password
+              })
+              if (data.success){
+                setToken(data.token)
+                setUser(data.user);
+                localStorage.setItem("token", data.token);
+                
+                // Fetch user credits after successful login
+                setTimeout(() => getUserCredits(), 500);
+                
+                toast.success("Login successful!");
+                setShowLogin(false);
+              }
+              else{
+                toast.error(data.message);
+              }
+          }
+          else if(state === "Sign Up") {
+              const {data} = await axios.post(backendUrl +"/api/user/register", {
+                name,
+                email,
+                password
+              })
+              if (data.success){
+                setToken(data.token)
+                setUser(data.user);
+                localStorage.setItem("token", data.token);
+                
+                // Fetch user credits after successful signup
+                setTimeout(() => getUserCredits(), 500);
+                
+                toast.success("Account created successfully!");
+                setShowLogin(false);
+              }
+              else{
+                toast.error(data.message);
+              }
+          }
+
+        }
+        catch (error) {
+            console.error("Error during form submission:", error);
+            toast.error(error.response?.data?.message || "Something went wrong!");
+        }
     }
 
     useEffect(() =>{
@@ -31,7 +90,9 @@ const Login = () => {
       transition={{ duration: 0.3 }}
       onClick={(e) => e.target === e.currentTarget && setShowLogin(false)}
     >
+    
         <motion.form 
+          onSubmit={onsubmitHandler}
           className='relative bg-white p-10 rounded-2xl text-slate-500 w-96 shadow-2xl'
           initial={{ scale: 0.7, opacity: 0, y: 50 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -112,6 +173,8 @@ const Login = () => {
                     transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", repeatDelay: 3 }}
                   />
                   <motion.input 
+                    onChange={(e) => setName(e.target.value)}
+                    value={name}
                     type="text" 
                     placeholder='Full Name' 
                     required 
@@ -142,6 +205,8 @@ const Login = () => {
                 />
                 <motion.input 
                   type="email" 
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
                   placeholder='Email Address' 
                   required 
                   className='outline-none text-sm flex-1'
@@ -168,7 +233,10 @@ const Login = () => {
                   transition={{ duration: 3, repeat: Infinity, repeatType: "reverse", repeatDelay: 1 }}
                 />
                 <motion.input 
+
                   type="password" 
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
                   placeholder='Password' 
                   required 
                   className='outline-none text-sm flex-1'
